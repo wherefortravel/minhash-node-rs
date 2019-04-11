@@ -10,14 +10,25 @@
     "node-pre-gyp": "amilajack/node-pre-gyp#neon-compat",
     "node-pre-gyp-github": "^1.4.3"
   },
+  "engines": {
+     "node": ">=10.12.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=false || neon build --release",
     "package": "node-pre-gyp package",
-    "build": "neon build"
+    "build": "neon build",
+    "upload-binary": "node-pre-gyp package && node-pre-gyp-github publish"
   },
   "binary": {
     "module_name": "index",
-    "host": "https://github.com/wherefortravel/minhash-node-rs",
+    "host": "https://github.com/wherefortravel/minhash-node-rs/releases/download/",
     "remote_path": "{version}",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz",
     "module_path": "./native",
@@ -26,5 +37,9 @@
   "files": [
     "native/index.node",
     "lib"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wherefortravel/minhash-node-rs.git"
+  }
 }
