@@ -3,6 +3,8 @@ use std::str;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::vec::Vec;
+use std::f64;
+use std::num::Wrapping;
 use std::hash::Hasher;
 use twox_hash::XxHash;
 
@@ -25,16 +27,65 @@ fn hash_str(input: &String) -> u32 {
     hash
 }
 
-impl MinHash {
-    pub fn new(num_perm: usize) -> MinHash {
-        let mut buffer: Vec<u32> = Vec::with_capacity(num_perm);
+static mut hash_seed: u32 = 1;
 
-        let mut i = 0;
+fn get_rand_int() -> u32 {
+    unsafe {
+        let max_hash = MAX_HASH as f64;
+        let x = (hash_seed as f64).sin() * max_hash;
+        hash_seed = hash_seed + 1;
 
-        while i < num_perm {
-            buffer[i] = MAX_HASH;
-            i += 1;
+        ((x - x.floor()) * max_hash).floor() as u32
+    }
+}
+
+fn get_random_perm(size: usize) -> Vec<u32> {
+    let mut perm = Vec::with_capacity(size);
+
+    let mut used: HashSet<u32> = HashSet::new();
+
+    while perm.len() < size {
+        let mut val = get_rand_int();
+
+        while used.contains(&val) {
+            val = get_rand_int();
         }
+
+        used.insert(val);
+        perm.push(val);
+    }
+
+    perm
+}
+
+#[derive(Debug)]
+pub struct PermGen {
+    perm_a: Vec<u32>,
+    perm_b: Vec<u32>,
+    num_perm: usize,
+}
+
+impl PermGen {
+    pub fn new(num_perm: usize) -> PermGen {
+        let perm_a = get_random_perm(num_perm);
+        let perm_b = get_random_perm(num_perm);
+
+        PermGen {
+            perm_a: perm_a,
+            perm_b: perm_b,
+            num_perm: num_perm,
+        }
+    }
+
+    pub fn num_perm(&self) -> usize {
+        self.num_perm
+    }
+}
+
+impl MinHash {
+    pub fn new(perm: &PermGen) -> MinHash {
+        let mut buffer: Vec<u32> = Vec::with_capacity(perm.num_perm());
+        buffer.resize(perm.num_perm(), MAX_HASH);
 
         MinHash { hash: buffer }
     }
@@ -43,14 +94,15 @@ impl MinHash {
         self.hash.capacity()
     }
 
-    pub fn update(&mut self, input: String) {
+    pub fn update(&mut self, perm: &PermGen, input: String) {
         let mut index = 0;
-        let mut num_perm = self.num_perm();
+        let num_perm = self.num_perm();
 
         while index < num_perm {
-            let a = 5;//permA[index];
-            let b = 6;//permB[index];
-            let hash = (a * hash_str(&input) + b) % MINHASH_PRIME;
+            let a = perm.perm_a[index];
+            let b = perm.perm_b[index];
+            let hash = (a.wrapping_mul(hash_str(&input)).wrapping_add(b))
+                .wrapping_rem(MINHASH_PRIME);
 
             if hash < self.hash[index] {
                 self.hash[index] = hash;
@@ -60,7 +112,7 @@ impl MinHash {
         }
     }
 
-    pub fn jaccard(&self, h: MinHash) -> f64 {
+    pub fn jaccard(&self, h: &MinHash) -> f64 {
         let mut shared: u32 = 0;
 
         for (i, v) in self.hash.iter().enumerate() {
@@ -79,7 +131,7 @@ pub struct LshIndex {
     band_size: u32,
 }
 
-fn get_hash_bands(hashes: Vec<u32>, band_size: u32) -> Vec<u64> {
+fn get_hash_bands(hashes: &Vec<u32>, band_size: u32) -> Vec<u64> {
     let mut ret: Vec<u64> = Vec::new();
     let size = hashes.capacity();
 
@@ -110,8 +162,8 @@ impl LshIndex {
         }
     }
 
-    pub fn insert(&mut self, key: String, h: MinHash) {
-        let hash_bands = get_hash_bands(h.hash, self.band_size);
+    pub fn insert(&mut self, key: String, h: &MinHash) {
+        let hash_bands = get_hash_bands(&h.hash, self.band_size);
 
         for band in &hash_bands {
             self.index
@@ -121,8 +173,8 @@ impl LshIndex {
         }
     }
 
-    pub fn query(&self, h: MinHash) -> Vec<String> {
-        let hash_bands = get_hash_bands(h.hash, self.band_size);
+    pub fn query(&self, h: &MinHash) -> Vec<String> {
+        let hash_bands = get_hash_bands(&h.hash, self.band_size);
         let mut ret: HashSet<String> = HashSet::new();
 
         for band in &hash_bands {
