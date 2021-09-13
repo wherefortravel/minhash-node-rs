@@ -6,9 +6,7 @@
   "author": "David Xu <dx@whereto.com>",
   "license": "MIT",
   "dependencies": {
-    "neon-cli": "^0.2.0",
-    "node-pre-gyp": "amilajack/node-pre-gyp#neon-compat",
-    "node-pre-gyp-github": "^1.4.3"
+    "node-pre-gyp": "^0.13.0"
   },
   "engines": {
     "node": ">=10.12.0"
@@ -42,5 +40,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wherefortravel/minhash-node-rs.git"
+  },
+  "devDependencies": {
+    "neon-cli": "0.3.1",
+    "node-pre-gyp-github": "^1.4.3"
   }
 }
