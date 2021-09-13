@@ -1,6 +1,6 @@
 {
   "name": "minhash-node-rs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "lib/index.js",
   "author": "David Xu <dx@whereto.com>",
@@ -18,7 +18,8 @@
     "linux"
   ],
   "cpu": [
-    "x64"
+    "x64",
+    "arm64"
   ],
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=false || neon build --release",
