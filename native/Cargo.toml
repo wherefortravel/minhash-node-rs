@@ -8,7 +8,7 @@ exclude = ["artifacts.json", "index.node"]
 
 [lib]
 name = "minhash_node_rs"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 
 [build-dependencies]
 neon-build = "0.10.0"
