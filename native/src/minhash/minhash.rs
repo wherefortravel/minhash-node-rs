@@ -1,10 +1,8 @@
 use std::fmt::Debug;
-use std::str;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::vec::Vec;
 use std::f64;
-use std::num::Wrapping;
 use std::hash::Hasher;
 use twox_hash::XxHash;
 
@@ -27,13 +25,13 @@ fn hash_str(input: &String) -> u32 {
     hash
 }
 
-static mut hash_seed: u32 = 1;
+static mut HASH_SEED: u32 = 1;
 
 fn get_rand_int() -> u32 {
     unsafe {
         let max_hash = MAX_HASH as f64;
-        let x = (hash_seed as f64).sin() * max_hash;
-        hash_seed = hash_seed + 1;
+        let x = (HASH_SEED as f64).sin() * max_hash;
+        HASH_SEED = HASH_SEED + 1;
 
         ((x - x.floor()) * max_hash).floor() as u32
     }
@@ -136,7 +134,7 @@ fn get_hash_bands(hashes: &Vec<u32>, band_size: u32) -> Vec<u64> {
     let size = hashes.capacity();
 
     let mut i: usize = 0;
-    let _band_size = (band_size as usize);
+    let _band_size = band_size as usize;
 
     while i < size {
         let end = i + _band_size;

@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate neon;
 extern crate twox_hash;
 
@@ -29,7 +28,7 @@ declare_types! {
   pub class JsMinHash for MinHash {
     init(mut cx) {
       let perm_gen = cx.argument::<JsPermGen>(0)?;
-      
+
       let ret_val = {
         let guard = cx.lock();
         let gen: &PermGen = & *perm_gen.borrow(&guard);
@@ -43,7 +42,7 @@ declare_types! {
     method jaccard(mut cx) {
       let other = cx.argument::<JsMinHash>(0)?;
       let this = cx.this();
-      
+
       let val = {
         let guard = cx.lock();
         let hash = this.borrow(&guard);
@@ -71,7 +70,7 @@ declare_types! {
   }
 
   pub class JsLshIndex for LshIndex {
-    init(cx) {
+    init(_cx) {
       Ok(LshIndex::new(4))
     }
 
